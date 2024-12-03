@@ -1,11 +1,14 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #define __USE_POSIX
 #include <string.h>
 #include <unistd.h>
 
 constexpr int CURRENT_DAY = 2;
+constexpr int REPORT_COUNT = 1000;
+char TEST_INPUT[] =
+    "7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9";
 
 char* read_input() {
     char filename[32];
@@ -52,6 +55,13 @@ void free_report(Report* report) {
     report->length = 0;
 }
 
+/**
+ * Converts a line of space-separated numbers into a Report structure
+ *
+ * @param line A string containing space-separated numbers
+ * @return Report structure containing an array of parsed integers
+ *         Returns empty Report if memory allocation fails
+ */
 Report report_from_line(const char* line) {
     size_t capacity = 8;
     Report report = {.data = NULL, .length = 0};
@@ -84,33 +94,40 @@ Report report_from_line(const char* line) {
 }
 
 /**
- * Checks if a report's numerical sequence is monotonically increasing or decreasing.
- *
- * @param report Pointer to the Report structure containing the sequence to check.
- *              The report must contain a valid data array and length.
- *
- * @return true if:
- *         - The report has less than 2 elements
- *         - All elements maintain the same direction (increasing or decreasing)
- *         false if the sequence changes direction at any point
- *
- * Example:
- *   [1,2,3,4] -> true (monotonically increasing)
- *   [4,3,2,1] -> true (monotonically decreasing)
- *   [1,2,1,3] -> false (changes direction)
+ * Checks if a report's data follows safety criteria.
+ * A report is considered safe if:
+ * 1. All consecutive numbers differ by at most 3
+ * 2. The sequence is strictly increasing or strictly decreasing
+ * 3. No consecutive numbers are equal
  */
 bool report_is_safe(const Report* report) {
-    assert(report->data != NULL && report->length > 0 && "Report is uninitialized");
+    assert(report->data != NULL && report->length != 0);
 
     if (report->length < 2) {
         return true;
     }
 
-    bool is_increasing = report->data[1] > report->data[0];
+    constexpr int MAX_DIFF = 3;
+    int first_diff = report->data[1] - report->data[0];
+    bool is_increasing = first_diff > 0 ? true : false;
+
+    if(first_diff == 0) {
+        return false;
+    }
 
     for (size_t i = 2; i < report->length; ++i) {
-        bool current_increasing = report->data[i] > report->data[i - 1];
-        if (current_increasing != is_increasing) {
+        int current_diff = report->data[i] - report->data[i - 1];
+        bool current_is_increasing = current_diff > 0 ? true : false;
+
+        if(current_diff == 0) {
+            return false;
+        }
+
+        if(abs(current_diff) > MAX_DIFF) {
+            return false;
+        }
+
+        if (current_is_increasing != is_increasing) {
             return false;
         }
     }
@@ -119,6 +136,7 @@ bool report_is_safe(const Report* report) {
 }
 
 void report_print(const Report* report) {
+    printf("Report: ");
     printf("[");
     for (size_t i = 0; i < report->length; ++i) {
         printf("%d", report->data[i]);
@@ -126,11 +144,12 @@ void report_print(const Report* report) {
             printf(", ");
         }
     }
-    printf("]\n");
+    printf("] ");
+    printf("length: %zu\n", report->length);
 }
 
 int part_one(char* input) {
-    Report reports[1000] = {0};
+    Report reports[REPORT_COUNT] = {};
     char* saveptr = NULL;
     char* line = strtok_r(input, "\n", &saveptr);
 
@@ -141,11 +160,10 @@ int part_one(char* input) {
     }
 
     int safe_reports = 0;
-    for(int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < REPORT_COUNT; ++i) {
         if (report_is_safe(&reports[i])) {
             safe_reports++;
-            /* printf("Safe report: "); */
-            /* report_print(&reports[i]); */
+            report_print(&reports[i]);
         }
         free_report(&reports[i]);
     }
