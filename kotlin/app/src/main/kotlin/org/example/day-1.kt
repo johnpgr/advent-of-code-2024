@@ -1,10 +1,14 @@
 package org.example
 
-object Day1 {
+object DayOne {
     const val CURRENT_DAY = 1
     val TEST_INPUT = "3   4\n4   3\n2   5\n1   3\n3   9\n3   3".split("\n")
     val INPUT =
-            Day1::class.java.getResourceAsStream("/input/day-$CURRENT_DAY.txt")?.bufferedReader()?.readLines()
+            this::class
+                    .java
+                    .getResourceAsStream("/input/day-$CURRENT_DAY.txt")
+                    ?.bufferedReader()
+                    ?.readLines()
                     ?: error("Input file not found for day $CURRENT_DAY")
     val columns =
             INPUT.fold(Pair(listOf<Int>(), listOf<Int>())) { acc, line ->
@@ -12,7 +16,7 @@ object Day1 {
                 Pair(acc.first + split[0].toInt(), acc.second + split[1].toInt())
             }
 
-    fun partOne():Int {
+    fun partOne(): Int {
         val sortedLeft = columns.first.sorted()
         val sortedRight = columns.second.sorted()
         val distances =
@@ -24,7 +28,7 @@ object Day1 {
         return sum
     }
 
-    fun partTwo():Int {
+    fun partTwo(): Int {
         val (left, right) = columns
         val similarityScores =
                 left.map { value ->

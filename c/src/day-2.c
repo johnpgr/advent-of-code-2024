@@ -7,6 +7,7 @@
 
 constexpr int CURRENT_DAY = 2;
 constexpr int REPORT_COUNT = 1000;
+constexpr int MAX_DIFF = 3;
 char TEST_INPUT[] =
     "7 6 4 2 1\n1 2 7 8 9\n9 7 6 2 1\n1 3 2 4 5\n8 6 4 4 1\n1 3 6 7 9";
 
@@ -107,17 +108,20 @@ bool report_is_safe(const Report* report) {
         return true;
     }
 
-    constexpr int MAX_DIFF = 3;
     int first_diff = report->data[1] - report->data[0];
-    bool is_increasing = first_diff > 0 ? true : false;
+    bool is_increasing = first_diff > 0; 
 
     if(first_diff == 0) {
         return false;
     }
 
+    if(abs(first_diff) > MAX_DIFF) {
+        return false;
+    }
+
     for (size_t i = 2; i < report->length; ++i) {
         int current_diff = report->data[i] - report->data[i - 1];
-        bool current_is_increasing = current_diff > 0 ? true : false;
+        bool current_is_increasing = current_diff > 0;
 
         if(current_diff == 0) {
             return false;
@@ -136,7 +140,7 @@ bool report_is_safe(const Report* report) {
 }
 
 void report_print(const Report* report) {
-    printf("Report: ");
+    printf("Report ");
     printf("[");
     for (size_t i = 0; i < report->length; ++i) {
         printf("%d", report->data[i]);
@@ -144,8 +148,7 @@ void report_print(const Report* report) {
             printf(", ");
         }
     }
-    printf("] ");
-    printf("length: %zu\n", report->length);
+    printf("] \n");
 }
 
 int part_one(char* input) {
@@ -179,10 +182,10 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    int result1 = part_one(input);
+    part_one(input);
     /* int result2 = part_two(input); */
 
-    printf("Part 1: %d\n", result1);
+    /* printf("Part 1: %d\n", result1); */
     /* printf("Part 2: %d\n", result2); */
 
     /* free(input); */

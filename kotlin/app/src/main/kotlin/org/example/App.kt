@@ -10,8 +10,13 @@ fun main(args: Array<String>) {
 
     when (day) {
         1 -> {
-            println("day 1 part 1: ${Day1.partOne()}")
-            println("day 1 part 2: ${Day1.partTwo()}")
+            println("day 1 part 1: ${DayOne.partOne()}")
+            println("day 1 part 2: ${DayOne.partTwo()}")
+        }
+        2 -> {
+            DayTwo.partOne()
+            // println("day 1 part 1: ${DayTwo.partOne()}")
+            // println("day 1 part 2: ${DayTwo.partTwo()}")
         }
         else -> println("Day $day not implemented")
     }
