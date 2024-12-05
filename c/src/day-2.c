@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define __USE_POSIX
@@ -49,49 +50,88 @@ char* read_input() {
 typedef struct {
     int* data;
     size_t length;
-} Report;
+} IntArray;
 
-void free_report(Report* report) {
+void deinit(IntArray* report) {
     free(report->data);
     report->length = 0;
 }
 
 /**
- * Converts a line of space-separated numbers into a Report structure
+ * Removes an element at the specified index from an array within a IntArray
+ *
+ * Creates a new IntArray containing a copy of the original array with the
+ * element at the specified index removed. The length of the new IntArray will
+ * be one less than the original.
+ *
+ * @param original Pointer to the source IntArray containing the array to modify
+ * @param index The index of the element to remove
+ * @return IntArray structure containing the new array with the element removed
+ *         Returns empty IntArray if index is invalid or original data is NULL
+ * @note Caller is responsible for freeing the returned IntArray's data using
+ * free_report()
+ */
+IntArray remove_at(const IntArray* original, size_t index) {
+    IntArray new_arr = {};
+
+    if (index >= original->length || original->data == NULL) {
+        return new_arr;
+    }
+
+    new_arr.length = original->length - 1;
+    new_arr.data = malloc(new_arr.length * sizeof(int));
+
+    if (!new_arr.data) {
+        new_arr.length = 0;
+        return new_arr;
+    }
+
+    // Copy elements before index
+    memcpy(new_arr.data, original->data, index * sizeof(int));
+
+    // Copy elements after index
+    memcpy(new_arr.data + index, original->data + index + 1,
+           (original->length - index - 1) * sizeof(int));
+
+    return new_arr;
+}
+
+/**
+ * Initializes an IntArray structure from a string of space-separated numbers
  *
  * @param line A string containing space-separated numbers
  * @return Report structure containing an array of parsed integers
  *         Returns empty Report if memory allocation fails
  */
-Report report_from_line(const char* line) {
+IntArray init(const char* line) {
     size_t capacity = 8;
-    Report report = {.data = NULL, .length = 0};
+    IntArray arr = {};
 
-    report.data = malloc(capacity * sizeof(int));
+    arr.data = malloc(capacity * sizeof(int));
 
     const char* ptr = line;
     int num;
     int chars_read;
 
     while (sscanf(ptr, "%d%n", &num, &chars_read) == 1) {
-        if (report.length >= capacity) {
+        if (arr.length >= capacity) {
             capacity *= 2;
-            int* new_arr = realloc(report.data, capacity * sizeof(int));
+            int* new_arr = realloc(arr.data, capacity * sizeof(int));
             if (!new_arr) {
-                free(report.data);
-                report.data = NULL;
-                report.length = 0;
-                return report;
+                free(arr.data);
+                arr.data = NULL;
+                arr.length = 0;
+                return arr;
             }
-            report.data = new_arr;
+            arr.data = new_arr;
         }
-        report.data[report.length++] = num;
+        arr.data[arr.length++] = num;
         ptr += chars_read;
         while (*ptr == ' ')
             ptr++; // Skip spaces
     }
 
-    return report;
+    return arr;
 }
 
 /**
@@ -101,7 +141,7 @@ Report report_from_line(const char* line) {
  * 2. The sequence is strictly increasing or strictly decreasing
  * 3. No consecutive numbers are equal
  */
-bool report_is_safe(const Report* report) {
+bool is_safe(const IntArray* report) {
     assert(report->data != NULL && report->length != 0);
 
     if (report->length < 2) {
@@ -109,13 +149,13 @@ bool report_is_safe(const Report* report) {
     }
 
     int first_diff = report->data[1] - report->data[0];
-    bool is_increasing = first_diff > 0; 
+    bool is_increasing = first_diff > 0;
 
-    if(first_diff == 0) {
+    if (first_diff == 0) {
         return false;
     }
 
-    if(abs(first_diff) > MAX_DIFF) {
+    if (abs(first_diff) > MAX_DIFF) {
         return false;
     }
 
@@ -123,11 +163,11 @@ bool report_is_safe(const Report* report) {
         int current_diff = report->data[i] - report->data[i - 1];
         bool current_is_increasing = current_diff > 0;
 
-        if(current_diff == 0) {
+        if (current_diff == 0) {
             return false;
         }
 
-        if(abs(current_diff) > MAX_DIFF) {
+        if (abs(current_diff) > MAX_DIFF) {
             return false;
         }
 
@@ -139,7 +179,34 @@ bool report_is_safe(const Report* report) {
     return true;
 }
 
-void report_print(const Report* report) {
+int get_first_bad_level(const IntArray* report) {
+    assert(report->data != NULL || report->length >= 2);
+
+    int first_diff = report->data[1] - report->data[0];
+    bool is_increasing = first_diff > 0;
+
+    if (first_diff == 0) {
+        return 1;
+    }
+
+    if (abs(first_diff) > MAX_DIFF) {
+        return 1;
+    }
+
+    for (size_t i = 2; i < report->length; ++i) {
+        int current_diff = report->data[i] - report->data[i - 1];
+        bool current_is_increasing = current_diff > 0;
+
+        if (current_diff == 0 || abs(current_diff) > MAX_DIFF ||
+            current_is_increasing != is_increasing) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void int_arr_print(const IntArray* report) {
     printf("Report ");
     printf("[");
     for (size_t i = 0; i < report->length; ++i) {
@@ -152,29 +219,65 @@ void report_print(const Report* report) {
 }
 
 int part_one(char* input) {
-    Report reports[REPORT_COUNT] = {};
+    char* input_copy = strdup(input);
     char* saveptr = NULL;
-    char* line = strtok_r(input, "\n", &saveptr);
+    char* line = strtok_r(input_copy, "\n", &saveptr);
 
+    IntArray reports[REPORT_COUNT] = {};
     int i = 0;
+
     while (line != NULL) {
-        reports[i++] = report_from_line(line);
+        reports[i++] = init(line);
         line = strtok_r(NULL, "\n", &saveptr);
     }
 
     int safe_reports = 0;
     for (int i = 0; i < REPORT_COUNT; ++i) {
-        if (report_is_safe(&reports[i])) {
+        if (is_safe(&reports[i])) {
             safe_reports++;
-            report_print(&reports[i]);
+            int_arr_print(&reports[i]);
         }
-        free_report(&reports[i]);
+        deinit(&reports[i]);
     }
 
     return safe_reports;
 }
 
-int part_two(char* input [[maybe_unused]]) { return 0; }
+int part_two(char* input) {
+    char* input_copy = strdup(input);
+    char* saveptr = NULL;
+    char* line = strtok_r(input_copy, "\n", &saveptr);
+    IntArray reports[REPORT_COUNT] = {};
+    int i = 0;
+
+    while (line != NULL) {
+        reports[i++] = init(line);
+        line = strtok_r(NULL, "\n", &saveptr);
+    }
+
+    int safe_reports = 0;
+
+    for (int i = 0; i < REPORT_COUNT; ++i) {
+        int first_bad = get_first_bad_level(&reports[i]);
+
+        if (first_bad == -1) {
+            safe_reports++;
+            deinit(&reports[i]);
+            continue;
+        }
+
+        IntArray new_report = remove_at(&reports[i], first_bad);
+        int new_first_bad = get_first_bad_level(&new_report);
+
+        if (new_first_bad == -1) {
+            safe_reports++;
+        }
+
+        deinit(&reports[i]);
+    }
+
+    return safe_reports;
+}
 
 int main(void) {
     char* input = read_input();
@@ -182,12 +285,13 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    part_one(input);
+    [[maybe_unused]]
+    int result1 = part_one(input);
     /* int result2 = part_two(input); */
 
     /* printf("Part 1: %d\n", result1); */
     /* printf("Part 2: %d\n", result2); */
 
-    /* free(input); */
+    free(input);
     return EXIT_SUCCESS;
 }

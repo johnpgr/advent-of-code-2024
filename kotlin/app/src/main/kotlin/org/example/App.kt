@@ -14,9 +14,8 @@ fun main(args: Array<String>) {
             println("day 1 part 2: ${DayOne.partTwo()}")
         }
         2 -> {
-            DayTwo.partOne()
-            // println("day 1 part 1: ${DayTwo.partOne()}")
-            // println("day 1 part 2: ${DayTwo.partTwo()}")
+            println("day 1 part 1: ${DayTwo.partOne()}")
+            println("day 1 part 2: ${DayTwo.partTwo()}")
         }
         else -> println("Day $day not implemented")
     }
