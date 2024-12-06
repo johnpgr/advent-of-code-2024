@@ -70,5 +70,7 @@ fun main() {
     }
 
     solve(::partOne, "day-4")
+    solve(::partOne, "day-4.test", 18)
     solve(::partTwo, "day-4")
+    solve(::partTwo, "day-4.test", 9)
 }

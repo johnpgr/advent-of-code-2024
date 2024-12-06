@@ -49,5 +49,7 @@ fun main() {
             }.last().sum
 
     solve(::partOne, "day-3")
+    solve(::partOne, "day-3.test", 161)
     solve(::partTwo, "day-3")
+    solve(::partTwo, "day-3.test2", 48)
 }

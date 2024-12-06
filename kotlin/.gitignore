@@ -2,6 +2,8 @@
 .idea
 .kotlin/
 build
-src/**/*.txt
+input/*.txt
+!input/*.test.txt
+!input/*.test2.txt
 local.properties
 .token

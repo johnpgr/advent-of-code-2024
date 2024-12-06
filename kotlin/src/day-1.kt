@@ -39,6 +39,8 @@ fun main() {
         return sum
     }
 
+    solve(::partOne, "day-1.test", 11)
     solve(::partOne, "day-1")
+    solve(::partTwo, "day-1.test", 31)
     solve(::partTwo, "day-1")
 }
