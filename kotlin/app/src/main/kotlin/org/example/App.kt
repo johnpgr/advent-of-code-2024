@@ -17,6 +17,10 @@ fun main(args: Array<String>) {
             println("day 1 part 1: ${DayTwo.partOne()}")
             println("day 1 part 2: ${DayTwo.partTwo()}")
         }
+        3 -> {
+            println("day 3 part 1: ${DayThree.partOne()}")
+            println("day 3 part 2: ${DayThree.partTwo()}")
+        }
         else -> println("Day $day not implemented")
     }
 }

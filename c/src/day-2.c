@@ -148,65 +148,29 @@ bool is_safe(const IntArray* report) {
         return true;
     }
 
-    int first_diff = report->data[1] - report->data[0];
-    bool is_increasing = first_diff > 0;
+    int diffs[report->length - 1] = {};
 
-    if (first_diff == 0) {
-        return false;
+    for (size_t i = 1; i < report->length; ++i) {
+        diffs[i - 1] = report->data[i] - report->data[i - 1];
     }
 
-    if (abs(first_diff) > MAX_DIFF) {
-        return false;
+    bool all_positive = true;
+    bool all_negative = false;
+    bool all_in_safe_range = false;
+
+    for (size_t i = 0; i < report->length - 1; ++i) {
+        if (diffs[i] <= 0)
+            all_positive = false;
+        if (diffs[i] >= 0)
+            all_negative = false;
+        if (abs(diffs[i]) < 1 || abs(diffs[i]) > 3)
+            all_in_safe_range = false;
     }
 
-    for (size_t i = 2; i < report->length; ++i) {
-        int current_diff = report->data[i] - report->data[i - 1];
-        bool current_is_increasing = current_diff > 0;
-
-        if (current_diff == 0) {
-            return false;
-        }
-
-        if (abs(current_diff) > MAX_DIFF) {
-            return false;
-        }
-
-        if (current_is_increasing != is_increasing) {
-            return false;
-        }
-    }
-
-    return true;
+    return (all_positive || all_negative) && all_in_safe_range;
 }
 
-int get_first_bad_level(const IntArray* report) {
-    assert(report->data != NULL || report->length >= 2);
-
-    int first_diff = report->data[1] - report->data[0];
-    bool is_increasing = first_diff > 0;
-
-    if (first_diff == 0) {
-        return 1;
-    }
-
-    if (abs(first_diff) > MAX_DIFF) {
-        return 1;
-    }
-
-    for (size_t i = 2; i < report->length; ++i) {
-        int current_diff = report->data[i] - report->data[i - 1];
-        bool current_is_increasing = current_diff > 0;
-
-        if (current_diff == 0 || abs(current_diff) > MAX_DIFF ||
-            current_is_increasing != is_increasing) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-void int_arr_print(const IntArray* report) {
+void print(const IntArray* report) {
     printf("Report ");
     printf("[");
     for (size_t i = 0; i < report->length; ++i) {
@@ -216,6 +180,20 @@ void int_arr_print(const IntArray* report) {
         }
     }
     printf("] \n");
+}
+
+int count(IntArray (*reports)[1000], void* predicate(IntArray*)) {
+    int count = 0;
+
+    for (int i = 0; i < REPORT_COUNT; ++i) {
+        if (predicate(reports[i])) {
+            count++;
+            print(reports[i]);
+        }
+        deinit(reports[i]);
+    }
+
+    return count;
 }
 
 int part_one(char* input) {
@@ -235,7 +213,7 @@ int part_one(char* input) {
     for (int i = 0; i < REPORT_COUNT; ++i) {
         if (is_safe(&reports[i])) {
             safe_reports++;
-            int_arr_print(&reports[i]);
+            print(&reports[i]);
         }
         deinit(&reports[i]);
     }
@@ -257,24 +235,7 @@ int part_two(char* input) {
 
     int safe_reports = 0;
 
-    for (int i = 0; i < REPORT_COUNT; ++i) {
-        int first_bad = get_first_bad_level(&reports[i]);
-
-        if (first_bad == -1) {
-            safe_reports++;
-            deinit(&reports[i]);
-            continue;
-        }
-
-        IntArray new_report = remove_at(&reports[i], first_bad);
-        int new_first_bad = get_first_bad_level(&new_report);
-
-        if (new_first_bad == -1) {
-            safe_reports++;
-        }
-
-        deinit(&reports[i]);
-    }
+    count(reports, NULL);
 
     return safe_reports;
 }
