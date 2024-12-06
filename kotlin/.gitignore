@@ -1,9 +1,7 @@
-# Ignore Gradle project-specific cache directory
 .gradle
-
-.token
-
-# Ignore Gradle build output directory
+.idea
+.kotlin/
 build
-
-app/src/main/resources/input
+src/**/*.txt
+local.properties
+.token

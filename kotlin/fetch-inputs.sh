@@ -18,7 +18,7 @@ done
 
 # Default output file if not provided
 if [ -z "$OUTPUT_FILE" ]; then
-    OUTPUT_FILE="./app/src/main/resources/input/day-$DAY.txt"
+    OUTPUT_FILE="./input/day-$DAY.txt"
     # Create src directory if it doesn't exist
     mkdir -p ./input
 fi
