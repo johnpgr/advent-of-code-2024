@@ -40,7 +40,7 @@ fun main() {
                         val (newRow, newCol) = Pair(
                             row + direction.row * i, col + direction.col * i
                         )
-                        newRow in grid.indices && newCol in grid[newRow].indices && grid[newRow][newCol] == "XMAS"[i]
+                        newRow in grid.indices && newCol in grid[newRow].indices && grid[newRow][newCol] == pattern[i]
                     }
                 }
             }
