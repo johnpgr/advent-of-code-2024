@@ -37,7 +37,6 @@ fun List<Int>.sortWithRules(rules: List<List<Int>>): List<Int> {
     return sort(this, true)
 }
 
-
 fun main() {
     fun partOne(input: String): Int {
         val splits = input.split("\n\n")
