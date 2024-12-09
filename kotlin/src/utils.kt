@@ -11,19 +11,19 @@ fun getFunctionName(fn: (String) -> Int): String = fn.toString().split("function
 
 fun solve(fn: (String) -> Int, input: String, assert: Int? = null) {
     val fnName = getFunctionName(fn)
-    val memoryMXBean = ManagementFactory.getMemoryMXBean()
-    System.gc()
-    val beforeUsedHeapMemory = memoryMXBean.heapMemoryUsage.used
-    val startTime = System.currentTimeMillis()
-    val result = fn(readInput(input))
-    val endTime = System.currentTimeMillis()
-    val runtimeMs = endTime - startTime
-    val afterUsedHeapMemory = memoryMXBean.heapMemoryUsage.used
-    val usedMemory = afterUsedHeapMemory - beforeUsedHeapMemory
+    val inputData = readInput(input)
+    val startTime = System.nanoTime()
+    
+    val result = fn(inputData)
+    
+    val endTime = System.nanoTime()
+    
+    val runtimeMs = (endTime - startTime) / 1_000_000.0
 
     assert?.let {
         require(result == it) { "Expected $it but got $result" }
     }
 
-    println("[$input]: $fnName -> $result (runtime: ${runtimeMs}ms, heap: ${usedMemory / 1024}MB)")
+    println("[$input]: $fnName -> $result (runtime: ${String.format("%.2f", runtimeMs)}ms)")
 }
+
