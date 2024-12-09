@@ -107,7 +107,7 @@ fun Guard.simulatePath(): Set<Vec2> {
 /**
  * Return true if the guard has gotten stuck in a loop
  */
-fun Guard.simulatePathUntilRepeat(): Boolean {
+fun Guard.simulatePathUntilLoop(): Boolean {
     val visited = mutableSetOf<GuardState>()
 
     while (inMapBounds()) {
@@ -146,7 +146,7 @@ fun main() {
                     val copy = lab.copy()
                     copy[pos] = Tile.OBSTACLE
 
-                    val stuck = copy.guard.simulatePathUntilRepeat()
+                    val stuck = copy.guard.simulatePathUntilLoop()
                     if(stuck) count.incrementAndGet()
                 }
             }
