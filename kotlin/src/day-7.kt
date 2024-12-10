@@ -14,7 +14,6 @@ data class Equation(val testValue: Long, val operators: List<Long>) {
     }
 }
 
-
 fun Equation.evaluate(): Boolean {
     var acc = operators[0]
 

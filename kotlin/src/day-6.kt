@@ -1,4 +1,4 @@
-import java.util.concurrent.atomic.AtomicInteger 
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -147,7 +147,7 @@ fun main() {
                     copy[pos] = Tile.OBSTACLE
 
                     val stuck = copy.guard.simulatePathUntilLoop()
-                    if(stuck) count.incrementAndGet()
+                    if (stuck) count.incrementAndGet()
                 }
             }
         }
