@@ -3,16 +3,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-data class Vec2(val x: Int, val y: Int) {
-    operator fun plus(other: Vec2): Vec2 = Vec2(x + other.x, y + other.y)
-}
-
-enum class Facing(val value: Vec2) {
-    NORTH(Vec2(0, -1)), SOUTH(Vec2(0, 1)), EAST(Vec2(1, 0)), WEST(Vec2(-1, 0)),
-}
-
 enum class Tile(val char: Char) {
-    EMPTY('.'), OBSTACLE('#'), GUARD('^');
+    EMPTY('.'),
+    OBSTACLE('#'),
+    GUARD('^');
 
     companion object {
         fun fromChar(char: Char): Tile {
@@ -26,17 +20,18 @@ enum class Tile(val char: Char) {
     }
 }
 
-class Lab(val tiles: List<MutableList<Char>>) {
-    val guard: Guard = Guard(this, GuardState(Vec2(-1, -1), Facing.NORTH)).apply {
-        tiles.forEachIndexed { y, line ->
-            line.forEachIndexed { x, char ->
-                if (Tile.fromChar(char) == Tile.GUARD) {
-                    state.pos = Vec2(x, y)
-                    startingPosition = state.pos
+class Lab(tiles: List<MutableList<Char>>) : Grid<Char>(tiles) {
+    val guard: Guard =
+            Guard(this, GuardState(Vec2(-1, -1), Direction.NORTH)).apply {
+                tiles.forEachIndexed { y, line ->
+                    line.forEachIndexed { x, char ->
+                        if (Tile.fromChar(char) == Tile.GUARD) {
+                            state.pos = Vec2(x, y)
+                            startingPosition = state.pos
+                        }
+                    }
                 }
             }
-        }
-    }
 }
 
 fun Lab.copy(): Lab {
@@ -46,9 +41,7 @@ fun Lab.copy(): Lab {
 
 fun Lab.forEach(cb: (Vec2, Tile) -> Unit) {
     tiles.forEachIndexed { y, line ->
-        line.forEachIndexed { x, char ->
-            cb(Vec2(x, y), Tile.fromChar(char))
-        }
+        line.forEachIndexed { x, char -> cb(Vec2(x, y), Tile.fromChar(char)) }
     }
 }
 
@@ -64,15 +57,17 @@ operator fun Lab.set(pos: Vec2, tile: Tile) {
     tiles[pos.y][pos.x] = tile.char
 }
 
-data class GuardState(var pos: Vec2, var facing: Facing)
+data class GuardState(var pos: Vec2, var facing: Direction)
 
 fun GuardState.turnRight() {
-    facing = when (facing) {
-        Facing.NORTH -> Facing.EAST
-        Facing.EAST -> Facing.SOUTH
-        Facing.SOUTH -> Facing.WEST
-        Facing.WEST -> Facing.NORTH
-    }
+    facing =
+            when (facing) {
+                Direction.NORTH -> Direction.EAST
+                Direction.EAST -> Direction.SOUTH
+                Direction.SOUTH -> Direction.WEST
+                Direction.WEST -> Direction.NORTH
+                else -> error("UNKNOWN DIRECTION")
+            }
 }
 
 class Guard(val lab: Lab, val state: GuardState) {
@@ -92,9 +87,7 @@ fun Guard.step() {
     state.pos += state.facing.value
 }
 
-/**
- * Simulate the path of the guard and return the set of visited positions
- */
+/** Simulate the path of the guard and return the set of visited positions */
 fun Guard.simulatePath(): Set<Vec2> {
     val visited = mutableSetOf<Vec2>()
     while (inMapBounds()) {
@@ -104,9 +97,7 @@ fun Guard.simulatePath(): Set<Vec2> {
     return visited
 }
 
-/**
- * Return true if the guard has gotten stuck in a loop
- */
+/** Return true if the guard has gotten stuck in a loop */
 fun Guard.simulatePathUntilLoop(): Boolean {
     val visited = mutableSetOf<GuardState>()
 
@@ -128,7 +119,7 @@ fun main() {
         val guard = lab.guard
         val visited = guard.simulatePath()
 
-        return visited.size - 1 //start position offset
+        return visited.size - 1 // start position offset
     }
 
     fun partTwo(input: String): Int {

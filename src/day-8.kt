@@ -1,9 +1,11 @@
 fun main() {
     fun partOne(): Int {
-        return 0
+        val grid = object {}
+
+        return -1
     }
 
     fun partTwo(): Int {
-        return 0
+        return -1
     }
 }
