@@ -16,6 +16,10 @@ fun <T> Grid<T>.forEach(cb: (pos: Vec2, value: T) -> Unit) {
     }
 }
 
+fun <T> Grid<T>.isInBounds(point: Vec2): Boolean {
+    return point.x in 0 until tiles[0].size && point.y in 0 until tiles.size
+}
+
 data class Vec2(val x: Int, val y: Int) {
     operator fun plus(other: Vec2): Vec2 = Vec2(x + other.x, y + other.y)
 }
