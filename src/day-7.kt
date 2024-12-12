@@ -1,9 +1,4 @@
-import java.util.concurrent.atomic.AtomicLong 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-
-data class Equation(val testValue: Long, val operators: List<Long>) {
+private data class Equation(val testValue: Long, val operators: List<Long>) {
     companion object {
         fun fromLine(line: String): Equation {
             val (testInputRaw, opsRaw) = line.split(": ")
@@ -14,7 +9,7 @@ data class Equation(val testValue: Long, val operators: List<Long>) {
     }
 }
 
-fun Equation.evaluate(): Boolean {
+private fun Equation.evaluate(): Boolean {
     var acc = operators[0]
 
     for (i in 1 until operators.size) {
@@ -34,7 +29,7 @@ fun Equation.evaluate(): Boolean {
     return acc == testValue
 }
 
-fun Equation.evaluate2(): Boolean {
+private fun Equation.evaluate2(): Boolean {
     var acc = operators[0]
 
     for (i in 1 until operators.size) {
@@ -56,17 +51,17 @@ fun Equation.evaluate2(): Boolean {
     return acc == testValue
 }
 
+private fun partOne(input: String): Long {
+    val equations = input.lines().map(Equation::fromLine)
+    return equations.filter(Equation::evaluate).sumOf(Equation::testValue)
+}
+
+private fun partTwo(input: String): Long {
+    val equations = input.lines().map(Equation::fromLine)
+    return equations.filter(Equation::evaluate2).sumOf(Equation::testValue)
+}
+
 fun main() {
-    fun partOne(input: String): Long {
-        val equations = input.lines().map(Equation::fromLine)
-        return equations.filter(Equation::evaluate).sumOf(Equation::testValue)
-    }
-
-    fun partTwo(input: String): Long {
-        val equations = input.lines().map(Equation::fromLine)
-        return equations.filter(Equation::evaluate2).sumOf(Equation::testValue)
-    }
-
     solve(::partOne, "day-7.test", 3749)
     solve(::partOne, "day-7")
     solve(::partTwo, "day-7.test", 11387)
