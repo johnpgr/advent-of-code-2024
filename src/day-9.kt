@@ -1,11 +1,13 @@
-private const val FREE_SPACE = Long.MIN_VALUE
+private const val FREE_SPACE = Int.MIN_VALUE
 
 private class FileSystem(input: String) {
-    private data class State(val data: List<Long>, val id: Long, val file: Boolean)
+    private data class State(val data: List<Int>, val id: Int, val file: Boolean)
 
-    val data: MutableList<Long> = run {
+    var maxId: Int = 0
+
+    val data: MutableList<Int> = run {
         // Initial state
-        val initial = State(data = emptyList<Long>(), id = 0, file = true)
+        val initial = State(data = emptyList<Int>(), id = 0, file = true)
 
         val finalState = input.fold(initial) { state, char ->
             // Number of blocks to allocate
@@ -18,6 +20,8 @@ private class FileSystem(input: String) {
                 false -> State(data = state.data + List(count) { FREE_SPACE }, id = state.id, file = true)
             }
         }
+
+        maxId = finalState.id - 1
 
         // Return the final state
         finalState.data.toMutableList()
@@ -46,34 +50,80 @@ private fun FileSystem.moveByBytes() {
     }
 }
 
-private fun FileSystem.moveByFiles() {
-    var fileEnd = data.indexOfLast { it != FREE_SPACE }
+private fun FileSystem.getLeftMostFreeSpace(minSize: Int): IntRange? {
+    // println("Looking for free space of size $minSize")
+    var freeStart = -1
     
-    while (fileEnd > 0) {
-        val currentFile = data[fileEnd]
-        
-        var fileStart = fileEnd
-        while(fileStart > 0 && data[fileStart - 1] == currentFile) {
-            fileStart--
-        }
-        
-        val fileSize = fileEnd - fileStart + 1
-        var freeStart = data.indexOf(FREE_SPACE)
-        
-        if (freeStart >= 0 && freeStart < fileStart) {
-            for (i in 0 until fileSize) {
-                data[freeStart + i] = currentFile
-                data[fileStart + i] = FREE_SPACE
+    data.forEachIndexed { i, x ->
+        if (x == FREE_SPACE && freeStart == -1) {
+            freeStart = i
+        } else if (x != FREE_SPACE && freeStart != -1) {
+            val range = freeStart until i
+            if (range.count() >= minSize) {
+                // println("Found free space: $range")
+                return range
             }
+            freeStart = -1
         }
-        
-        // Update fileEnd to point to the position before the current file
-        fileEnd = fileStart - 1
     }
+    
+    val result = if (freeStart != -1) {
+        val range = freeStart until data.size
+        if (range.count() >= minSize) range else null
+    } else null
+
+    // println("Found free space: $result")
+
+    return result
+}
+
+private fun FileSystem.getFile(id: Int): IntRange? {
+    var fileStart = -1
+    
+    data.forEachIndexed { i, x ->
+        if (x == id && fileStart == -1) {
+            fileStart = i
+        } else if (x != id && fileStart != -1) {
+            return fileStart until i
+        }
+    }
+    
+    return if (fileStart != -1) {
+        fileStart until data.size
+    } else null
 }
 
 
-private fun FileSystem.checkSum(): Long = data.indices.sumOf { it * (if (data[it] != FREE_SPACE) data[it] else 0) }
+private fun FileSystem.moveFile(fileRange: IntRange, freeSpace: IntRange){
+    val fileId = data[fileRange.first]
+
+    // println("Moving file $fileId from $fileRange to $freeSpace")
+
+    for (i in fileRange) {
+        data[i] = FREE_SPACE
+    }
+
+    for (i in freeSpace) {
+        if (i < freeSpace.first + (fileRange.last - fileRange.first + 1)) {
+            data[i] = fileId
+        }
+    }
+}
+
+private fun FileSystem.moveByFiles() {
+    for (id in maxId downTo 0) {
+        val file = getFile(id) ?: error("This shouldn't happen")
+        val freeSpace = getLeftMostFreeSpace(file.count()) ?: continue
+
+        if (freeSpace.first < file.first) {
+            moveFile(file, freeSpace)
+        }
+    }
+}
+
+private fun FileSystem.checkSum(): Long = data.indices.sumOf { 
+    it.toLong() * (if (data[it] != FREE_SPACE) data[it].toLong() else 0L) 
+}
 
 private fun partOne(input: String): Long {
     return FileSystem(input).let { it.moveByBytes(); it.checkSum() }
@@ -87,5 +137,5 @@ fun main() {
     // solve(::partOne, "day-9.test", 1928)
     // solve(::partOne, "day-9")
     solve(::partTwo, "day-9.test", 2858)
-    // solve(::partTwo, "day-9")
+    solve(::partTwo, "day-9")
 }
