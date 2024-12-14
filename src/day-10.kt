@@ -7,8 +7,8 @@ private val VALID_DIRS = listOf(
     Direction.WEST,
 )
 
-private fun Grid<Int>.calculateTrailHeadScore(value: Int, pos: Vec2): Long {
-    var score = 0L
+private fun Grid<Int>.calculateTrailHeadScore(value: Int, pos: Vec2): Int {
+    var score = 0
     val visited = mutableSetOf<Vec2>()
     val reachedHighest = mutableListOf<Vec2>()
 
@@ -46,10 +46,34 @@ private fun Grid<Int>.calculateTrailHeadScore(value: Int, pos: Vec2): Long {
     return score
 }
 
-private fun partOne(input: String): Long {
+private fun Grid<Int>.findDistinctPaths(value: Int, pos: Vec2): Set<List<Vec2>> {
+    val paths = mutableSetOf<List<Vec2>>()
+
+    fun dfs(current: Vec2, currentHeight: Int, currentPath: List<Vec2>) {
+        if (this[current] == HIGHEST) {
+            paths.add(currentPath)
+            return
+        }
+
+        for (dir in VALID_DIRS) {
+            val next = current + dir.value
+            val nextHeight = this[next]
+
+            if (nextHeight == currentHeight + 1 && next !in currentPath) {
+                dfs(next, nextHeight, currentPath + next)
+            }
+        }
+    }
+
+    dfs(pos, value, listOf(pos))
+
+    return paths
+}
+
+private fun partOne(input: String): Int {
     val parsed = input.lines().map { it.map { it.digitToInt() }.toMutableList() }
     val map = Grid<Int>(parsed)
-    var scoreSum = 0L
+    var scoreSum = 0
 
     map.forEach { pos, value ->
         if (value != 0) return@forEach
@@ -59,11 +83,24 @@ private fun partOne(input: String): Long {
     return scoreSum
 }
 
-private fun partTwo(input: String): Long {
-    return 0
+private fun partTwo(input: String): Int {
+    val parsed = input.lines().map { it.map { it.digitToInt() }.toMutableList() }
+    val map = Grid<Int>(parsed)
+    var rating = 0
+
+    map.forEach { pos, value ->
+        if (value != 0) return@forEach
+
+        val distinctPaths = map.findDistinctPaths(value, pos)
+        rating += distinctPaths.size
+    }
+
+    return rating
 }
 
 fun main() {
     solve(::partOne, "day-10.test", 36)
     solve(::partOne, "day-10")
+    solve(::partTwo, "day-10.test", 81)
+    solve(::partTwo, "day-10")
 }
