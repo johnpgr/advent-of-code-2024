@@ -24,6 +24,7 @@ private fun partOne(input: String): Int = input.lines().map { it.toList() }.let 
     }
 }.count { it }
 
+@Suppress("USELESS_CAST")
 private fun partTwo(input: String): Int {
     val grid = Grid(input.lines().map { it.toMutableList() })
     val diagonals = listOf(
@@ -32,16 +33,15 @@ private fun partTwo(input: String): Int {
         Direction.SOUTH_EAST,
         Direction.NORTH_WEST,
     )
-    var count = 0
-
-    grid.forEach { pos, char ->
+    val count = grid.asSequence().sumOf { (pos, char) ->
         if (char == 'A') {
             val corners = diagonals.map { grid[pos, it] }
             val differ = corners[0] != corners[1] && corners[2] != corners[3]
             val patternFound = corners.count { it == 'M' } == 2 && corners.count { it == 'S' } == 2
-            if (patternFound && differ) count++
-        }
+            if (patternFound && differ) 1 else 0
+        } else 0 as Int // this cast is needed, weird jvm bug
     }
+
 
     return count
 }

@@ -72,27 +72,21 @@ private fun Grid<Int>.findDistinctPaths(value: Int, pos: Vec2): Set<List<Vec2>> 
 
 private fun partOne(input: String): Int {
     val parsed = input.lines().map { it.map { it.digitToInt() }.toMutableList() }
-    val map = Grid<Int>(parsed)
-    var scoreSum = 0
+    val grid = Grid<Int>(parsed)
 
-    map.forEach { pos, value ->
-        if (value != 0) return@forEach
-        scoreSum += map.calculateTrailHeadScore(value, pos)
+    val score = grid.asSequence().filter { (_, value) -> value == 0 }.sumOf { (pos, value) ->
+        grid.calculateTrailHeadScore(value, pos)
     }
 
-    return scoreSum
+    return score
 }
 
 private fun partTwo(input: String): Int {
     val parsed = input.lines().map { it.map { it.digitToInt() }.toMutableList() }
-    val map = Grid<Int>(parsed)
-    var rating = 0
+    val grid = Grid<Int>(parsed)
 
-    map.forEach { pos, value ->
-        if (value != 0) return@forEach
-
-        val distinctPaths = map.findDistinctPaths(value, pos)
-        rating += distinctPaths.size
+    val rating = grid.asSequence().filter { (_,value) ->  value == 0 }.sumOf { (pos, value) -> 
+        grid.findDistinctPaths(value, pos).size
     }
 
     return rating

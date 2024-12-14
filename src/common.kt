@@ -8,43 +8,15 @@ operator fun <T> Grid<T>.set(pos: Vec2, value: T) {
     tiles.getOrNull(pos.y)?.set(pos.x, value)
 }
 
-fun <T> Grid<T>.forEach(cb: (pos: Vec2, value: T) -> Unit) {
+fun <T> Grid<T>.asSequence(): Sequence<Pair<Vec2, T>> = sequence {
     for (y in tiles.indices) {
         for (x in tiles[y].indices) {
-            cb(Vec2(x, y), tiles[y][x])
+            val pos = Vec2(x, y)
+            val value = this@asSequence[pos]
+            if (value != null) {
+                yield(pos to value)
+            }
         }
-    }
-}
-
-fun <T> Grid<T>.map(cb: (pos: Vec2, value: T) -> T): Grid<T> {
-    val newTiles = tiles.mapIndexed { y, row ->
-        row.mapIndexed { x, value ->
-            cb(Vec2(x, y), value)
-        }.toMutableList()
-    }
-
-    return Grid(newTiles)
-}
-
-fun <T, I> Grid<T>.fold(initial: I, cb: (acc: I, pos: Vec2, value: T) -> I): I {
-    var acc = initial
-
-    forEach { pos, value ->
-        acc = cb(acc, pos, value)
-    }
-
-    return acc
-}
-
-fun <T> Grid<T>.count(cb: (pos: Vec2, value: T) -> Boolean): Int {
-    return fold(0) { acc, pos, value ->
-        if (cb(pos, value)) acc + 1 else acc
-    }
-}
-
-fun <T> Grid<T>.sumOf(cb: (pos: Vec2, value: T) -> Int): Int {
-    return fold(0) { acc, pos, value ->
-        acc + cb(pos, value)
     }
 }
 

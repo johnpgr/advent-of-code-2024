@@ -60,11 +60,10 @@ private fun <T> Vec2.collinearityPoints(other: Vec2, grid: Grid<T>): List<Vec2> 
 
 private fun partOne(input: String): Int {
     val grid = Grid<Char>(input.lines().map { it.toMutableList() })
-    val antennas = mutableMapOf<Char, MutableList<Vec2>>()
-    grid.forEach { pos, char ->
-        if (char == '.') return@forEach
-        antennas.getOrPut(char) { mutableListOf() }.add(pos)
-    }
+    val antennas =
+            grid.asSequence()
+                    .filterNot { (_, char) -> char == '.' }
+                    .groupBy({ (_, char) -> char }, { (pos, _) -> pos })
 
     val uniqueCollinearPoints = mutableSetOf<Vec2>()
     antennas.forEach { (_, positions) ->
@@ -89,11 +88,10 @@ private fun partOne(input: String): Int {
 
 private fun partTwo(input: String): Int {
     val grid = Grid<Char>(input.lines().map { it.toMutableList() })
-    val antennas = mutableMapOf<Char, MutableList<Vec2>>()
-    grid.forEach { pos, char ->
-        if (char == '.') return@forEach
-        antennas.getOrPut(char) { mutableListOf() }.add(pos)
-    }
+    val antennas =
+            grid.asSequence()
+                    .filterNot { (_, char) -> char == '.' }
+                    .groupBy({ (_, char) -> char }, { (pos, _) -> pos })
 
     val uniqueCollinearPoints = mutableSetOf<Vec2>()
 
