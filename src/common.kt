@@ -1,5 +1,23 @@
 open class Grid<T>(val tiles: List<MutableList<T>>)
 
+operator fun <T> Grid<T>.iterator(): Iterator<Vec2> = object : Iterator<Vec2> {
+    private var y = 0
+    private var x = 0
+
+    override fun hasNext(): Boolean {
+        return y < tiles.size
+    }
+
+    override fun next(): Vec2 {
+        val pos = Vec2(x, y)
+        if (++x >= tiles[y].size) {
+            x = 0
+            y++
+        }
+        return pos
+    }
+}
+
 operator fun <T> Grid<T>.get(pos: Vec2): T? {
     return tiles.getOrNull(pos.y)?.getOrNull(pos.x)
 }
