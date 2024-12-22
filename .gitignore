@@ -11,3 +11,4 @@ input/*.txt
 !input/*.test.txt
 !input/*.test2.txt
 
+kls_database.db
